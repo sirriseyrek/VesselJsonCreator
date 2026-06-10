@@ -34,7 +34,15 @@
       :t="t" 
       :vesselData="vesselData" 
       @back="step = 4" 
-      @next="saveFullConfig" 
+      @next="generateFlowmetersAndGo" 
+    />
+
+    <ConsumptionCalcStep
+      v-if="step === 6"
+      :t="t"
+      :vesselData="vesselData"
+      @back="step = 5"
+      @next="saveFullConfig"
     />
     <ToastMessage :message="statusMessage" />
 
@@ -52,6 +60,7 @@ import IdentityStep from './components/IdentityStep.vue'
 import NetworkStep from './components/NetworkStep.vue'
 import MachineryStep from './components/MachineryStep.vue'
 import SensorsStep from './components/SensorsStep.vue'
+import ConsumptionCalcStep from './components/ConsumptionCalcStep.vue'
 import ToastMessage from './components/ToastMessage.vue'
 
 const currentLang = ref('TR')
@@ -74,7 +83,8 @@ const vesselData = reactive({
   vesselName: '', imoNumber: '', createdBy: '', fuel1: '', fuel2: '',
   gatewayIp: '', installDate: '', dhcp: false, ipAddress: '', subnet: '',
   mainEngine: 0, generators: 0, boiler: 0, shaftGen: 0, turbineGen: 0,
-  flowmeter: 0, shaftMeter: 0, powerMeter: 0, tempSensor: 0, pressSensor: 0
+  flowmeter: 0, shaftMeter: 0, powerMeter: 0, tempSensor: 0, pressSensor: 0,
+  flowmetersList: [], calculations: {mainEngine: '', generators: '', boiler: ''}
 })
 
 const isReadyToExport = computed(() => isWizardFinished.value && vesselData.vesselName.trim() !== '')
@@ -102,6 +112,20 @@ onMounted(() => {
     }
   }
 })
+const generateFlowmetersAndGo = () => {
+  const count = vesselData.flowmeter || 0
+  
+  // Eğer daha önce import edilmemişse veya adet değiştiyse listeyi sıfırdan güvenli oluştur
+  if (vesselData.flowmetersList.length !== count) {
+    vesselData.flowmetersList = Array.from({ length: count }, (_, i) => ({
+      id: `fm${i + 1}`,
+      name: `FM${i + 1}`,
+      fuelType: 'None' // None, Fuel1, Fuel2, Both
+    }))
+  }
+  
+  step.value = 6 // Hesaplama sayfasına geç
+}
 
 // Sihirbazın sonundaki Next butonuna basılınca çalışan nihai kaydetme fonksiyonu
 const saveFullConfig = () => {
@@ -118,6 +142,7 @@ const translations = {
     gatewayIp: 'Gateway IP', installDate: 'Kurulum Tarihi',
     mainEngine: 'Ana Makine', generators: 'Jeneratörler', boiler: 'Kazan', shaftGen: 'Şaft Jeneratörü', turbineGen: 'Türbin Jeneratörü',
     flowmeter: 'FlowMetre', shaftMeter: 'ShaftMetre', powerMeter: 'KwMetre', tempSensor: 'Sıcaklık Sensörü', pressSensor: 'Basınç Sensörü',
+    formTitle5: 'Tüketim Hesaplama Formülleri',
     errorInvalid: 'Hata: Geçersiz veya uyumsuz JSON dosyası!', successImport: 'Dosya başarıyla yüklendi.', 
     successFinish: 'Gemi yapılandırması hazır! Yukarıdan EXPORT edebilirsiniz.'
   },
@@ -128,6 +153,7 @@ const translations = {
     gatewayIp: 'Gateway IP', installDate: 'Installation Date',
     mainEngine: 'Main Engine', generators: 'Generators', boiler: 'Boiler', shaftGen: 'Shaft Gen', turbineGen: 'Turbine Gen',
     flowmeter: 'Flowmeter', shaftMeter: 'Shaft Meter', powerMeter: 'Power Meter', tempSensor: 'Temp Sensor', pressSensor: 'Press Sensor',
+    formTitle5: 'Consumption Formula Calculations',
     errorInvalid: 'Error: Invalid or incompatible JSON file!', successImport: 'File imported successfully.', 
     successFinish: 'Vessel configuration ready! You can EXPORT from top bar.'
   }

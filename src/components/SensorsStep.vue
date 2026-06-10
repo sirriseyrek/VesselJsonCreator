@@ -21,7 +21,7 @@
     <div class="wizard-actions dual-buttons">
       <button class="back-btn" @click="$emit('back')">{{ t('backBtn') }}</button>
       <button class="action-btn" @click="$emit('next')">
-        {{ t('finishBtn') }}
+        {{ t('nextBtn') }}
       </button>
     </div>
   </main>
